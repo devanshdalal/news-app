@@ -14,10 +14,11 @@ from newsapi import NewsApiClient
 
 # Constants
 PAGE_SIZE = 100
+MINUTES_IN_HOUR = 60
 
 # Config
 update_interval = 360  # minutes
-countries = [] # 'in'
+countries = ['in', 'us', 'gb', 'au', 'ca', 'nz'] # 'in' ['in', 'us', 'gb', 'au', 'ca', 'nz']
 categories = {
     'business',
     'entertainment',
@@ -47,7 +48,7 @@ def FetchNews(newsapi):
         cindex = 0
         while keep_downloading:
             print('newsapi.get_top_headlines(category=', category,
-                  ', page=1'
+                  ', page=1', 'country='+countries[cindex] if countries != [] else '', 
                   ', page_size=', PAGE_SIZE, ')')
             r = None
             if countries == []:
@@ -64,7 +65,7 @@ def FetchNews(newsapi):
                                               page_size=PAGE_SIZE)
                 for c in r['articles']:
                     c['country'] = countries[cindex]
-                print(r['articles'])
+                # print(r['articles'])
                 news[category].extend(r['articles'])
                 cindex += 1
                 keep_downloading = cindex < len(countries)
@@ -85,13 +86,13 @@ def MakeReadyForImport(data):
 
 # Init Mongo
 mongo_client = MongoClient(MONGODB_URL)
-db = mongo_client['newsfeed']
-articles = db.articles
+db = mongo_client['feed']
+article = db.article
 
 if __name__== "__main__":
-    for row in articles.find().sort('_id', -1).limit(1):
+    for row in article.find().sort('_id', -1).limit(1):
         diff = datetime.now(timezone.utc) - row['_id'].generation_time
-        (m, s) = divmod(diff.total_seconds(), 60)
+        (m, s) = divmod(diff.total_seconds(), MINUTES_IN_HOUR)
         if (m <= update_interval):
             print('Not fetching/updating, last update:', m, 'minutes ago')
             exit(0)
@@ -99,6 +100,6 @@ if __name__== "__main__":
     news = MakeReadyForImport(news)
 
     # Drop collection articles
-    articles.drop()
-    articles.insert_many(news)
+    article.drop()
+    article.insert_many(news)
 

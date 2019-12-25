@@ -1,4 +1,3 @@
-{"status":"ok","sources":[{"id":"
 abc-news
 abc-news-au
 aftenposten
