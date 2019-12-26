@@ -8,6 +8,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
     @Override
     public Mono load(ServerWebExchange serverWebExchange) {
+        System.out.println("serverWebExchange:" + serverWebExchange.getAttributes());
         ServerHttpRequest request = serverWebExchange.getRequest();
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String authToken = null;
@@ -54,6 +56,8 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         if (authToken != null) {
             Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
             return authenticationManager.authenticate(auth).map((authentication) -> {
+                SecurityContextHolder
+                        .getContext().setAuthentication((Authentication) authentication);
                 return new SecurityContextImpl((Authentication) authentication);
             });
         } else {

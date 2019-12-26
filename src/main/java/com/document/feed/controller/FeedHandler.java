@@ -2,12 +2,16 @@ package com.document.feed.controller;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 
+import java.security.Principal;
+
 import javax.servlet.http.HttpSession;
 
 import org.reactivestreams.Publisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -32,15 +36,10 @@ public class FeedHandler {
 
     Mono<ServerResponse> list(ServerRequest r) {
         /////;
-        r.session().flatMap(webSession -> {
-            System.out.println("webSession: " + webSession.toString());
-            return null;
-        });
-        r.principal().flatMap(p -> {
-            System.out.println("p:" + p);
-            return null;
-        });
-
+        r.session().subscribe(webSession -> System.out.println("webSession:" + webSession.getCreationTime()));
+//        r.principal().subscribe(principal -> System.out.println("principal:" + principal.toString()));
+        // ReactiveSecurityContextHolder.getContext().subscribe(x -> System.out.println("rsch:" +
+        // x));
         return defaultReadResponse(this.feedService.list());
     }
 

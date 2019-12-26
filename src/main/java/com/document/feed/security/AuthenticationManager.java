@@ -37,9 +37,9 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             Claims claims = jwtTokenUtil.getAllClaimsFromToken(authToken);
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(username, null, null);
+//            SecurityContextHolder
+//                    .getContext().setAuthentication(auth);
             System.out.println("AuthenticationManager.getContext().setAuthentication:" + auth);
-            SecurityContextHolder
-                    .getContext().setAuthentication(auth);
             return Mono.just(auth);
         } else {
             return Mono.empty();
