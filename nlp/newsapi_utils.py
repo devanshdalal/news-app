@@ -1,20 +1,23 @@
+#!/usr/bin/python
+
 import math
 import sys
 import os
+import re
 from datetime import datetime, timezone
 from importlib import util as importlibutil
 
-from pymongo import MongoClient
 from newsapi import NewsApiClient
 
 # Constants
 PAGE_SIZE = 100
 MINUTES_IN_HOUR = 60
+SECONDS_IN_MINUTE = 60
 
 # Enable requests cache
 if importlibutil.find_spec("requests_cache"):
     import requests_cache
-    requests_cache.install_cache('.requests_cache', expire_after=60 * 60 * 12)
+    requests_cache.install_cache('.requests_cache', expire_after=SECONDS_IN_MINUTE * MINUTES_IN_HOUR * 12)
 
 # Config
 update_interval = 360  # minutes
@@ -33,12 +36,11 @@ categories = {
 NEWSAPI_ORG_KEY = os.environ.get('NEWSAPI_ORG_KEY')
 if not NEWSAPI_ORG_KEY:  # TODO(devansh): Remove
     NEWSAPI_ORG_KEY = 'ea0f26bbe06b44b898f0f0a80af00c7d'
-MONGODB_URL = os.environ.get('MONGODB_URL')
-if not MONGODB_URL:
-    MONGODB_URL = 'mongodb://localhost:27017'
-
 
 def FetchNews(newsapi):
+    def Transform(category, article):
+        article['category'] = category
+        return article
     news = {category: [] for category in categories}
     for category in categories:
         articles = []
@@ -70,38 +72,10 @@ def FetchNews(newsapi):
 
     for category_news in news:
         print(category_news, len(news[category_news]))
-    return news
-
-def MakeReadyForImport(data):
-    def Transform(category, article):
-        article['category'] = category
-        return article
     r = []
     for category in categories:
         r.extend(list(map(lambda x: Transform(category, x), data[category])))
     return r
 
-
-if __name__== "__main__":
-
-    # Init newsapi
-    newsapi = NewsApiClient(api_key=NEWSAPI_ORG_KEY)
-
-    # Init Mongo
-    mongo_client = MongoClient(MONGODB_URL)
-    db = mongo_client['feed']
-    article = db.article
-
-    for row in article.find().sort('_id', -1).limit(1):
-        diff = datetime.now(timezone.utc) - row['_id'].generation_time
-        (m, s) = divmod(diff.total_seconds(), MINUTES_IN_HOUR)
-        if (m <= update_interval):
-            print('Not fetching/updating, last update:', m, 'minutes ago')
-            exit(0)
-    news = FetchNews(newsapi)
-    news = MakeReadyForImport(news)
-
-    # Drop collection articles
-    article.drop()
-    article.insert_many(news)
-
+def GetNewsApiClient():
+	return NewsApiClient(api_key=NEWSAPI_ORG_KEY)
