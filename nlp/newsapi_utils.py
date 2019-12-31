@@ -14,13 +14,7 @@ PAGE_SIZE = 100
 MINUTES_IN_HOUR = 60
 SECONDS_IN_MINUTE = 60
 
-# Enable requests cache
-if importlibutil.find_spec("requests_cache"):
-    import requests_cache
-    requests_cache.install_cache('.requests_cache', expire_after=SECONDS_IN_MINUTE * MINUTES_IN_HOUR * 12)
-
 # Config
-update_interval = 360  # minutes
 countries = ['in', 'us', 'gb', 'au', 'ca', 'nz'] # 'in' ['in', 'us', 'gb', 'au', 'ca', 'nz']
 categories = {
     'business',
@@ -36,6 +30,13 @@ categories = {
 NEWSAPI_ORG_KEY = os.environ.get('NEWSAPI_ORG_KEY')
 if not NEWSAPI_ORG_KEY:  # TODO(devansh): Remove
     NEWSAPI_ORG_KEY = 'ea0f26bbe06b44b898f0f0a80af00c7d'
+
+# Enable requests cache
+def InstallRequestsCache():
+    if importlibutil.find_spec("requests_cache"):
+        print('Enabling requests_cache')
+        import requests_cache
+        requests_cache.install_cache('.requests_cache', expire_after=SECONDS_IN_MINUTE * MINUTES_IN_HOUR * 12)
 
 def FetchNews(newsapi):
     def Transform(category, article):
@@ -74,7 +75,7 @@ def FetchNews(newsapi):
         print(category_news, len(news[category_news]))
     r = []
     for category in categories:
-        r.extend(list(map(lambda x: Transform(category, x), data[category])))
+        r.extend(list(map(lambda x: Transform(category, x), news[category])))
     return r
 
 def GetNewsApiClient():

@@ -28,18 +28,22 @@ def ExtractText(data):
 
 tf = TfidfVectorizer(max_features=max_features, stop_words='english')
 
-def TfIdfScores(news, liked):
-	extracted_news = ExtractText(news)
-	fit_transform = tf.fit_transform(extracted_news)
-	for i,_ in enumerate(news):
-		news['v'] = fit_transform[i].todense()
+def TfIdfScores(news, liked = []):
+    extracted_news = ExtractText(news)
+    fit_transform = tf.fit_transform(extracted_news)
+    # print(fit_transform[0].todense())
+    for i,_ in enumerate(news):
+        news[i]['v'] = fit_transform[i].todense().tolist()[0]
+    
+    # print('i', 0, news[0]['v'])
 
-	extracted_liked = ExtractText(liked)
+    if len(liked) > 0:
+        extracted_liked = ExtractText(liked)
 
-	transform = tf.transform(extracted_liked)
-	for i,_ in enumerate(liked):
-		liked['v'] = transform[i].todense()
+        transform = tf.transform(extracted_liked)
+        for i,_ in enumerate(liked):
+            liked[i]['v'] = transform[i].todense().tolist()[0]
 
-	return news, liked
+    return news, liked
 
 
