@@ -3,11 +3,11 @@
     dot: {
         $reduce: {
             input: { $range: [ 0, { $size: "$v" }] },
-            initialValue: 0,
+            initialValue: 0.0,
             in: {
                 $let: {
                     vars: { b: %s },
-                    in: { $add: [ "$$value", { $multiply: [ { $arrayElemAt: [ "$a", "$$this" ] }, { $arrayElemAt: [ "$$b", "$$this" ] } ] } ] }
+                    in: { $add: [ "$$value", { $multiply: [ { $arrayElemAt: [ "$v", "$$this" ] }, { $arrayElemAt: [ "$$b", "$$this" ] } ] } ] }
                 }
             }
         }
