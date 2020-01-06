@@ -43,6 +43,6 @@ public class FeedService {
 //        userReactiveRepository.findByUsername(username).flatMap()
         System.out.println("sc:" + SecurityContextHolder.getContext().getAuthentication());
 //        System.out.println("ac:" + authentication.toString());
-        return this.repository.findAll();
+        return this.repository.findByDotProduct();
     }
 }

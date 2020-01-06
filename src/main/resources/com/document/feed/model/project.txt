@@ -1,0 +1,15 @@
+{
+    author: 1,
+    dot: {
+        $reduce: {
+            input: { $range: [ 0, { $size: "$v" }] },
+            initialValue: 0,
+            in: {
+                $let: {
+                    vars: { b: [%s] },
+                    in: { $add: [ "$$value", { $multiply: [ { $arrayElemAt: [ "$a", "$$this" ] }, { $arrayElemAt: [ "$$b", "$$this" ] } ] } ] }
+                }
+            }
+        }
+    }
+}

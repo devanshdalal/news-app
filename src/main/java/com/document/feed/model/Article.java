@@ -45,5 +45,11 @@ public class Article {
     private String content;
     private String country;
     private String category;
+
+    // Vector of Tf-Idf weights.
     private List<Double> v;
+
+
+    // Extra fields computed during ordering.
+    private double dot;
 }
