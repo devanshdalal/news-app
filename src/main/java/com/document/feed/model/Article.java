@@ -49,7 +49,12 @@ public class Article {
     // Vector of Tf-Idf weights.
     private List<Double> v;
 
-
     // Extra fields computed during ordering.
     private double dot;
+
+//    public Article(String id, String author, Double dot) {
+//        this.id = id;
+//        this.author = author;
+//        this.dot = dot;
+//    }
 }

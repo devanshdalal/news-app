@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -45,9 +46,16 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
     }
 
     public Flux<Article> findByDotProduct() {
-        Aggregation aggregation = newAggregation(Testing.class,
-                aggregate("$project", project),
-                sort(Sort.Direction.DESC, "dot")
+        double[] array = new double[50];
+        for (int i = 0; i < array.length; ++i) {
+            array[i] = 1.0;
+        }
+        String finalProject = String.format(project, Arrays.toString(array));
+        System.out.println("finalProject: " + finalProject);
+        Aggregation aggregation = newAggregation(Article.class,
+                aggregate("$project",
+                        finalProject),
+                        sort(Sort.Direction.DESC, "dot")
         );
 
         return mongoTemplate.aggregate(aggregation, "article", Article.class);

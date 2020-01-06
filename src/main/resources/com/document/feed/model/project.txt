@@ -6,7 +6,7 @@
             initialValue: 0,
             in: {
                 $let: {
-                    vars: { b: [%s] },
+                    vars: { b: %s },
                     in: { $add: [ "$$value", { $multiply: [ { $arrayElemAt: [ "$a", "$$this" ] }, { $arrayElemAt: [ "$$b", "$$this" ] } ] } ] }
                 }
             }
