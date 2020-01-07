@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 
+import org.la4j.vector.dense.BasicVector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -45,12 +46,8 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
         this.project = asString(resource);
     }
 
-    public Flux<Article> findByDotProduct() {
-        double[] array = new double[50];
-        for (int i = 0; i < array.length; ++i) {
-            array[i] = 1.0;
-        }
-        String finalProject = String.format(project, Arrays.toString(array));
+    public Flux<Article> findByDotProduct(BasicVector basicVector) {
+        String finalProject = String.format(project, Arrays.toString(basicVector.toArray()));
         System.out.println("finalProject: " + finalProject);
         Aggregation aggregation = newAggregation(Article.class,
                 aggregate("$project",

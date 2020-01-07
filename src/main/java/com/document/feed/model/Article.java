@@ -1,13 +1,9 @@
 package com.document.feed.model;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.*;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import java.util.List;
-
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.lang.NonNullFields;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,17 +48,12 @@ public class Article {
     private String category;
 
     // Vector of Tf-Idf weights.
-    private List<Double> v;
+    private double[] v;
 
     // Extra fields computed during ordering.
     private double dot;
 
-//    public Article(String id, String author, Double dot) {
-//        this.id = id;
-//        this.author = author;
-//        this.dot = dot;
-//    }
-    public List<Double> getV() {
+    public double[] getV() {
         return v;
     }
 }

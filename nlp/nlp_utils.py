@@ -11,14 +11,14 @@ import nltk
 nltk.download('wordnet')
 
 # Config
-max_features = 50  # max features to be used in TfidfVectorizer
+max_features = 100  # max features to be used in TfidfVectorizer
 stemming = True
 lemmatization = True
 lowercase = False
 remove_stops = True
 stops = ['the','a','an','and','but','if','or','because','as','what','which','this','that','these','those','then',
-              'just','so','than','such','both','through','about','for','is','of','while','during','to','What','Which',
-              'Is','If','While','This']
+        'just','so','than','such','both','through','about','for','is','of','while','during','to','What','Which',
+        'Is','If','While','This']
 # punctuation = punctuation.replace('_','')
 
 lemmatizer = WordNetLemmatizer()

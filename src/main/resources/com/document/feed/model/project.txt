@@ -3,6 +3,8 @@
     title: 1,
     description: 1,
     content: 1,
+    url: 1,
+    publishedAt: 1,
     dot: {
         $reduce: {
             input: { $range: [ 0, { $size: "$v" }] },
