@@ -71,7 +71,7 @@ public class FeedService {
     }
 
     public Mono<Article> setPreference(String id) {
-        System.out.println("/preference called");
+        System.out.println("FeedService.setPreference called");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = (String) authentication.getPrincipal();
         System.out.println("username:" + username);

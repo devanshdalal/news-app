@@ -69,6 +69,7 @@ public class FeedHandler {
     }
 
     private Mono<ServerResponse> HandlePreferenceCall(String objectId) {
+        System.out.println("Start HandlePreferenceCall");
         Mono<ServerResponse> notFound = ServerResponse.notFound().build();
         return feedService.setPreference(objectId)
                 .flatMap(x -> ServerResponse.ok().contentType(APPLICATION_JSON).bodyValue(x))
@@ -78,7 +79,7 @@ public class FeedHandler {
     @Bean
     public RouterFunction<ServerResponse> routeSetPreference() {
         return RouterFunctions
-                .route(POST("/like").and(accept(MediaType.APPLICATION_JSON)),
+                .route(POST("/like").and(accept(APPLICATION_JSON)),
                         this::setPreference);
     }
 }
