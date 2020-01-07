@@ -76,7 +76,15 @@ def FetchNews(newsapi):
     r = []
     for category in categories:
         r.extend(list(map(lambda x: Transform(category, x), news[category])))
-    return r
+    result = []
+    deduper = {}  
+    for x in r:
+        if x['url'] not in deduper and x['title'] not in deduper:
+            deduper[x['url']] = True
+            deduper[x['title']] = True
+            result.append(x)
+    print('len(result)', len(result))
+    return result
 
 def GetNewsApiClient():
 	return NewsApiClient(api_key=NEWSAPI_ORG_KEY)

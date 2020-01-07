@@ -1,5 +1,7 @@
 package com.document.feed.model;
 
+import java.util.stream.Stream;
+
 import org.reactivestreams.Publisher;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,6 +27,11 @@ public class Preference {
     private String id;
     private Article article;
     private String username;
+
+    public Preference(Article article, String username) {
+        this.article = article;
+        this.username = username;
+    }
 
     public Article getArticle() {
         return article;
