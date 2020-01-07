@@ -165,11 +165,12 @@ def TfIdfScores(news, liked = []):
         news[i]['v'] = fit_transform[i].todense().tolist()[0]
 
     if len(liked) > 0:
-        extracted_liked = ExtractText(liked)
+        extracted_liked = list(map(lambda x: x['article'], liked))
+        extracted_liked = ExtractText(extracted_liked)
 
         transform = tf.transform(extracted_liked)
         for i,_ in enumerate(liked):
-            liked[i]['v'] = transform[i].todense().tolist()[0]
+            liked[i]['article']['v'] = transform[i].todense().tolist()[0]
 
     return news, liked
 

@@ -15,14 +15,14 @@ newsapi = GetNewsApiClient()
 mongo_client = GetMongoClient()
 db = mongo_client[DB]
 article = db.article
-liked = db.liked
+preference = db.preference
 
 if not ToUpdateTable(article):
     exit(0)
 
 news = FetchNews(newsapi)
 
-liked_articles = list(liked.find())
+liked_articles = list(preference.find())
 
 news, liked_articles = TfIdfScores(news, liked_articles)
 
@@ -30,5 +30,5 @@ news, liked_articles = TfIdfScores(news, liked_articles)
 article.drop()
 article.insert_many(news)
 if len(liked_articles) > 0:
-    liked.drop()
-    liked.insert_many(liked_articles)
+    preference.drop()
+    preference.insert_many(liked_articles)

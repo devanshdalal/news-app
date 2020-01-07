@@ -1,8 +1,10 @@
 package com.document.feed.model;
 
+import org.reactivestreams.Publisher;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -15,25 +17,16 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 @Document
-public class User {
+@Getter
+@Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Preference {
     @Id
     private String id;
+    private Article article;
     private String username;
-    private String password;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(final String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(final String password) {
-        this.password = password;
+    public Article getArticle() {
+        return article;
     }
 }

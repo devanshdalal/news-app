@@ -1,12 +1,16 @@
 package com.document.feed.model;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.*;
+
 import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.NonNullFields;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -31,6 +35,7 @@ class Source {
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(Include.NON_NULL)
 public class Article {
 
     @Id
@@ -57,4 +62,7 @@ public class Article {
 //        this.author = author;
 //        this.dot = dot;
 //    }
+    public List<Double> getV() {
+        return v;
+    }
 }
