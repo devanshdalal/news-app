@@ -60,7 +60,7 @@ public class FeedService {
                 .flatMapMany(this::fetchByDotProduct);
     }
 
-    public Flux<Article> getPreference(/*Authentication authentication*/) {
+    public Flux<Article> getPreference() {
         System.out.println("/preference called");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = (String) authentication.getPrincipal();
@@ -70,12 +70,8 @@ public class FeedService {
                 .flatMap((Preference s) -> Flux.just(s.getArticle()));
     }
 
-    public Mono<Article> setPreference(String id) {
+    public Mono<Article> setPreference(String id, String username) {
         System.out.println("FeedService.setPreference called");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = (String) authentication.getPrincipal();
-        System.out.println("username:" + username);
-        System.out.println("sc:" + SecurityContextHolder.getContext().getAuthentication());
         return this.articleRepository.findById(id).flatMap(a ->
             preferenceRepository.save(new Preference(a, username))
                     .flatMap(saved -> Mono.just(saved.getArticle()))

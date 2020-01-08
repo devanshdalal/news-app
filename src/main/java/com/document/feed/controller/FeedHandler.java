@@ -7,6 +7,8 @@ import org.reactivestreams.Publisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -64,14 +66,16 @@ public class FeedHandler {
 
     public Mono<ServerResponse> setPreference(ServerRequest request) {
         System.out.println("Start setPreference()");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = (String) authentication.getPrincipal();
         Mono<String> id = request.bodyToMono(String.class);
-        return id.flatMap(this::HandlePreferenceCall);
+        return id.flatMap(objectId -> HandlePreferenceCall(objectId, username));
     }
 
-    private Mono<ServerResponse> HandlePreferenceCall(String objectId) {
+    private Mono<ServerResponse> HandlePreferenceCall(String objectId, String username) {
         System.out.println("Start HandlePreferenceCall");
         Mono<ServerResponse> notFound = ServerResponse.notFound().build();
-        return feedService.setPreference(objectId)
+        return this.feedService.setPreference(objectId, username)
                 .flatMap(x -> ServerResponse.ok().contentType(APPLICATION_JSON).bodyValue(x))
                 .switchIfEmpty(notFound);
     }
