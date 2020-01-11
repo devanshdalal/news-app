@@ -48,9 +48,7 @@ public class FeedService {
     }
 
     public Flux<Article> vanillaList() {
-        System.out.println("/vanillaList called");
         Flux<Article> result = articleRepository.findByProjection();
-        System.out.println("called");
         return result;
     }
 
@@ -65,7 +63,7 @@ public class FeedService {
                         Flux.just(new BasicVector(s.getArticle().getV())))
                 .reduce( (v1, v2) -> (BasicVector) v1.add(v2))
                 .flatMapMany(this::fetchByDotProduct)
-                .switchIfEmpty(x -> vanillaList());
+                .switchIfEmpty(articleRepository.findByProjection());
     }
 
     public Flux<Article> getPreference() {

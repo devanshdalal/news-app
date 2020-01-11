@@ -81,7 +81,6 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
         Aggregation aggregation = newAggregation(Article.class,
                 Aggregation.project(fieldsToProject.toArray(new String[0]))
         );
-        System.out.println("Start findByProjection here:" + aggregation.toString());
 
         return mongoTemplate.aggregate(aggregation, "article", Article.class);
     }
