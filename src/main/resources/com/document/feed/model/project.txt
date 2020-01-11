@@ -1,10 +1,5 @@
 {
-    author: 1,
-    title: 1,
-    description: 1,
-    content: 1,
-    url: 1,
-    publishedAt: 1,
+    %s,
     dot: {
         $reduce: {
             input: { $range: [ 0, { $size: "$v" }] },

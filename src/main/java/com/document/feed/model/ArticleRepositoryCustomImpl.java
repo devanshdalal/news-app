@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.la4j.vector.dense.BasicVector;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +30,8 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
     private final ReactiveMongoTemplate mongoTemplate;
     private String project;
 
-    public static String asString(Resource resource) {
-        try (Reader reader = new InputStreamReader(resource.getInputStream())) {
-            return FileCopyUtils.copyToString(reader);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    @Autowired
     public ArticleRepositoryCustomImpl(ReactiveMongoTemplate mongoTemplate,
-                                       ResourceLoader resourceLoader) {
+            ResourceLoader resourceLoader) {
         this.mongoTemplate = mongoTemplate;
         this.resourceLoader = resourceLoader;
 
@@ -46,14 +40,48 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
         this.project = asString(resource);
     }
 
+    public static final List<String> fieldsToProject = new ArrayList<String>() {
+        {
+            add("id");
+            add("author");
+            add("title");
+            add("description");
+            add("content");
+            add("url");
+            add("publishedAt");
+        }
+    };
+
+
+    private static String asString(Resource resource) {
+        try (Reader reader = new InputStreamReader(resource.getInputStream())) {
+            return FileCopyUtils.copyToString(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public Flux<Article> findByDotProduct(BasicVector basicVector) {
-        String finalProject = String.format(project, Arrays.toString(basicVector.toArray()));
+        List<String> fields =
+                fieldsToProject.stream().map(x -> x + ": 1").collect(Collectors.toList());
+        String finalProject = String.format(project,  String.join(",\n", fields),
+                Arrays.toString(basicVector.toArray()));
         System.out.println("finalProject: " + finalProject);
         Aggregation aggregation = newAggregation(Article.class,
                 aggregate("$project",
                         finalProject),
                         sort(Sort.Direction.DESC, "dot")
         );
+
+        return mongoTemplate.aggregate(aggregation, "article", Article.class);
+    }
+
+    public Flux<Article> findByProjection() {
+        System.out.println("Start findByProjection");
+        Aggregation aggregation = newAggregation(Article.class,
+                Aggregation.project(fieldsToProject.toArray(new String[0]))
+        );
+        System.out.println("Start findByProjection here:" + aggregation.toString());
 
         return mongoTemplate.aggregate(aggregation, "article", Article.class);
     }

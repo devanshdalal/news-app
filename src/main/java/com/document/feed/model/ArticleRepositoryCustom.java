@@ -6,4 +6,5 @@ import reactor.core.publisher.Flux;
 
 public interface ArticleRepositoryCustom {
     Flux<Article> findByDotProduct(BasicVector basicVector);
+    Flux<Article> findByProjection();
 }

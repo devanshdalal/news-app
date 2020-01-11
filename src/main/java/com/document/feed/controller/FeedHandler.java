@@ -1,7 +1,9 @@
 package com.document.feed.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.web.reactive.function.server.RequestPredicates.*;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
 import org.reactivestreams.Publisher;
 import org.springframework.context.annotation.Bean;
@@ -10,16 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.document.feed.model.Article;
-import com.document.feed.model.JwtRequest;
-import com.document.feed.model.JwtResponse;
-import com.document.feed.model.Preference;
 import com.document.feed.service.FeedService;
 import reactor.core.publisher.Mono;
 
@@ -36,6 +34,17 @@ public class FeedHandler {
     Mono<ServerResponse> list(ServerRequest r) {
         r.session().subscribe(webSession -> System.out.println("webSession:" + webSession.getCreationTime()));
         return defaultReadResponse(this.feedService.list());
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> routeVanillaList() {
+        return RouterFunctions
+                .route(GET("/vanillalist").and(accept(MediaType.APPLICATION_JSON)),
+                        this::vanillaList);
+    }
+
+    Mono<ServerResponse> vanillaList(ServerRequest r) {
+        return defaultReadResponse(this.feedService.vanillaList());
     }
 
     @Bean

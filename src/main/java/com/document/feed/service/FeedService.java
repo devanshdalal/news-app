@@ -5,6 +5,7 @@ import java.util.Vector;
 import java.util.stream.Stream;
 
 import org.la4j.vector.dense.BasicVector;
+import org.reactivestreams.Subscriber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -32,10 +33,6 @@ public class FeedService {
     @Autowired
     private final PreferenceReactiveRepository preferenceRepository;
 
-    private Flux<Article> fetchByDotProduct(BasicVector basicVector) {
-        return this.articleRepository.findByDotProduct(basicVector);
-    }
-
     public FeedService(ApplicationEventPublisher publisher,
                        ArticleReactiveRepository articleRepository,
                        UserReactiveRepository userRepository,
@@ -46,8 +43,18 @@ public class FeedService {
         this.preferenceRepository = preferenceRepository;
     }
 
+    private Flux<Article> fetchByDotProduct(BasicVector basicVector) {
+        return this.articleRepository.findByDotProduct(basicVector);
+    }
 
-    public Flux<Article> list(/*Authentication authentication*/) {
+    public Flux<Article> vanillaList() {
+        System.out.println("/vanillaList called");
+        Flux<Article> result = articleRepository.findByProjection();
+        System.out.println("called");
+        return result;
+    }
+
+    public Flux<Article> list() {
         System.out.println("/list called");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = (String) authentication.getPrincipal();
@@ -57,7 +64,8 @@ public class FeedService {
                 .flatMap((Preference s) ->
                         Flux.just(new BasicVector(s.getArticle().getV())))
                 .reduce( (v1, v2) -> (BasicVector) v1.add(v2))
-                .flatMapMany(this::fetchByDotProduct);
+                .flatMapMany(this::fetchByDotProduct)
+                .switchIfEmpty(x -> vanillaList());
     }
 
     public Flux<Article> getPreference() {
