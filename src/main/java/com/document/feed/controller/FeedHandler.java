@@ -32,7 +32,6 @@ public class FeedHandler {
     }
 
     Mono<ServerResponse> list(ServerRequest r) {
-        r.session().subscribe(webSession -> System.out.println("webSession:" + webSession.getCreationTime()));
         return defaultReadResponse(this.feedService.list());
     }
 
@@ -69,7 +68,7 @@ public class FeedHandler {
     @Bean
     public RouterFunction<ServerResponse> routeGetPreference() {
         return RouterFunctions
-                .route(GET("/preference").and(accept(MediaType.APPLICATION_JSON)),
+                .route(GET("/like").and(accept(MediaType.APPLICATION_JSON)),
                         this::getPreference);
     }
 
