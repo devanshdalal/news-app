@@ -2,9 +2,6 @@ package com.document.feed.model;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -13,14 +10,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 class Source {
-    private String id;
-    private String name;
+
+  private String id;
+
+  private String name;
 }
 
 @Data
@@ -34,26 +35,40 @@ class Source {
 @JsonInclude(Include.NON_NULL)
 public class Article {
 
-    @Id
-    private String id;
-    private Source source;
-    private String author;
-    private String title;
-    private String description;
-    private String url;
-    private String urlToImage;
-    private String publishedAt;
-    private String content;
-    private String country;
-    private String category;
+  @Id
+  private String id;
 
-    // Vector of Tf-Idf weights.
-    private double[] v;
+  private Source source;
 
-    // Extra fields computed during ordering.
-    private double dot;
+  private String author;
 
-    public double[] getV() {
-        return v;
-    }
+  private String title;
+
+  private String description;
+
+  private String url;
+
+  private String urlToImage;
+
+  private String publishedAt;
+
+  private String content;
+
+  private String country;
+
+  private String category;
+
+  // Vector of Tf-Idf weights.
+  private double[] v;
+
+  // Extra fields computed during ordering.
+  private double dot;
+
+  public double[] getV() {
+    return v;
+  }
+
+  public String getId() {
+    return id;
+  }
 }

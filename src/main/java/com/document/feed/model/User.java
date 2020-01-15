@@ -1,14 +1,11 @@
 package com.document.feed.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @AllArgsConstructor
@@ -16,24 +13,27 @@ import lombok.ToString;
 @ToString
 @Document
 public class User {
-    @Id
-    private String id;
-    private String username;
-    private String password;
 
-    public String getUsername() {
-        return username;
-    }
+  @Id
+  private String id;
 
-    public void setUsername(final String username) {
-        this.username = username;
-    }
+  private String username;
 
-    public String getPassword() {
-        return password;
-    }
+  private String password;
 
-    public void setPassword(final String password) {
-        this.password = password;
-    }
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(final String password) {
+    this.password = password;
+  }
 }
