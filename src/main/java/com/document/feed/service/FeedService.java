@@ -1,11 +1,6 @@
 package com.document.feed.service;
 
-import java.util.List;
-import java.util.Vector;
-import java.util.stream.Stream;
-
 import org.la4j.vector.dense.BasicVector;
-import org.reactivestreams.Subscriber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -22,13 +17,9 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class FeedService {
-//    private Factory denseFactory;
     private final ApplicationEventPublisher publisher;
     @Autowired
     private final ArticleReactiveRepository articleRepository;
-
-//    @Autowired
-//    private final UserReactiveRepository userRepository;
 
     @Autowired
     private final PreferenceReactiveRepository preferenceRepository;
