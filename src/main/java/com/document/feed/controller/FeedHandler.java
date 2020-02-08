@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -79,18 +80,20 @@ public class FeedHandler {
   }
 
   private PageRequest createPageRequest(ServerRequest r) {
-    Headers headers = r.headers();
-
-    int pageIndex = 0;  // default
-    List<String> pageIndexOpt = headers.header("page");
-    if (!pageIndexOpt.isEmpty() && !pageIndexOpt.get(0).isEmpty()) {
-      pageIndex = Integer.parseInt(pageIndexOpt.get(0));
-    }
+    MultiValueMap<String, String> params = r.queryParams();
+    System.out.println("headers " + r.queryParams());
 
     int pageSize = 30;  // default
-    List<String> pageSizeOpt = headers.header("size");
-    if (!pageSizeOpt.isEmpty() && !pageSizeOpt.isEmpty()) {
+    List<String> pageSizeOpt = params.get("limit");
+    if (null != pageSizeOpt && !pageSizeOpt.isEmpty() && !pageSizeOpt.isEmpty()) {
       pageSize = Integer.parseInt(pageSizeOpt.get(0));
+    }
+
+    int pageIndex = 0;  // default
+    List<String> skipOpt = params.get("skip");
+    if (null != skipOpt && !skipOpt.isEmpty() && !skipOpt.get(0).isEmpty()) {
+      // TODO(devansh): client can't request page starting from offset 10 of pagesize 500. Please handle that.
+      pageIndex = Integer.parseInt(skipOpt.get(0)) / pageSize;
     }
 
     return PageRequest.of(pageIndex, pageSize);

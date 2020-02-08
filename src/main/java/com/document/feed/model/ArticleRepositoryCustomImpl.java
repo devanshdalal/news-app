@@ -33,6 +33,7 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
       add("content");
       add("url");
       add("publishedAt");
+      add("urlToImage");
     }
   };
 
@@ -76,6 +77,8 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
   }
 
   public Flux<Article> findByProjection(PageRequest pageRequest) {
+    System.out.println(pageRequest.getOffset());
+    System.out.println("pageRequest.getPageSize() " + pageRequest.getPageSize());
     Aggregation aggregation = newAggregation(Article.class,
         Aggregation.project(fieldsToProject.toArray(new String[0])),
         Aggregation.skip(pageRequest.getOffset()),
