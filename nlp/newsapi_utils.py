@@ -77,9 +77,15 @@ def FetchNews(newsapi):
     for category in categories:
         r.extend(list(map(lambda x: Transform(category, x), news[category])))
     result = []
-    deduper = {}  
+    deduper = {}
     for x in r:
-        if x['url'] not in deduper and x['title'] not in deduper:
+        if 'title' not in x or 'url' not in x:
+            continue
+        if 'description' not in x and 'content' not in x:
+            continue
+        if x['url'] and x['url'] not in deduper and\
+                x['title'] and x['title'] not in deduper and\
+                (x['description'] or x['content']):
             deduper[x['url']] = True
             deduper[x['title']] = True
             result.append(x)

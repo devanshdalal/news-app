@@ -8,12 +8,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 import nltk
-nltk.download('wordnet')
 
 # Config
 max_features = 100  # max features to be used in TfidfVectorizer
 stemming = True
-lemmatization = True
+lemmatization = False
 lowercase = False
 remove_stops = True
 stops = ['the','a','an','and','but','if','or','because','as','what','which','this','that','these','those','then',
@@ -21,29 +20,34 @@ stops = ['the','a','an','and','but','if','or','because','as','what','which','thi
         'Is','If','While','This']
 # punctuation = punctuation.replace('_','')
 
-lemmatizer = WordNetLemmatizer()
+lemmatizer = None
+if lemmatization:
+    nltk.download('wordnet')
+    lemmatizer = WordNetLemmatizer()
 tf = TfidfVectorizer(max_features=max_features, stop_words='english')
-st = PorterStemmer()
+st = None
+if stemming:
+    st = PorterStemmer()
 
 def ExtractText(data):
-    def Prune(s):
-        if not s:
+    def Prune(item, s):
+        if s not in item or not item[s]:
             return ''
         return s
-    def StripFromEnd(s):
-        return re.sub(r'\[.+\]$', '', Prune(s))
-    def Special(pre, text):
-        if not text or text == '':
+    def StripFromEnd(item, s):
+        return re.sub(r'\[.+\]$', '', Prune(item, s))
+    def Special(pre, item):
+        if pre not in item or item[pre] == None or item[pre] == '':
             return ''
-        return pre + '_' + Prune(text).replace(' ', '-')
+        return pre + '_' + item[pre].replace(' ', '-')
     def ExtractItem(item):
-        return ' '.join([Prune(item['title']),
-                         Prune(item['description']),
-                         StripFromEnd(item['content'])])
-    def PostExtraction(txt):
-        return ' '.join([txt, Special('author', item['author']),
-                        Special('country', item['country']),
-                        Special('category', item['category'])])
+        return ' '.join([Prune(item, 'title'),
+                         Prune(item, 'description'),
+                         StripFromEnd(item, 'content')])
+    def PostExtraction(item, txt):
+        return ' '.join([txt, Special('author', item),
+                        Special('country', item),
+                        Special('category', item)])
     def ApplyOpts(txt):
         # Replace apostrophes with standard lexicons
         txt = txt.replace("isn't", "is not")
@@ -153,7 +157,7 @@ def ExtractText(data):
     result = [''] * len(data)
     for i, item in enumerate(data):
         result[i] = ApplyOpts(ExtractItem(item))
-        result[i] = PostExtraction(result[i])
+        result[i] = PostExtraction(item, result[i])
     return result
 
 def TfIdfScores(news, liked = []):

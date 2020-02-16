@@ -10,6 +10,10 @@ import static org.springframework.web.reactive.function.server.ServerRequest.Hea
 
 import com.document.feed.model.Article;
 import com.document.feed.service.FeedService;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import org.reactivestreams.Publisher;
 import org.springframework.context.annotation.Bean;
@@ -76,7 +80,33 @@ public class FeedHandler {
     Mono<String> id = request.bodyToMono(String.class);
     return id.flatMap(objectId -> this.feedService.setPreference(objectId, username)
         .flatMap(x -> ServerResponse.ok().contentType(APPLICATION_JSON).bodyValue(x))
-        .switchIfEmpty(ServerResponse.notFound().build()));
+        .switchIfEmpty(ServerResponse.notFound().build())).doFinally(i -> RunCmd());
+  }
+
+  private void RunCmd() {
+    try {
+      Process process = Runtime.getRuntime().exec("python nlp/main.py True");
+      StringBuilder output = new StringBuilder();
+
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(process.getInputStream()));
+
+      String line;
+      while ((line = reader.readLine()) != null) {
+        output.append(line + "\n");
+      }
+
+      int exitVal = process.waitFor();
+      if (exitVal == 0) {
+        System.out.println("Success!");
+        System.out.println(output);
+        System.exit(0);
+      } else {
+        System.out.println("Failure!");
+      }
+    } catch (IOException | InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   private PageRequest createPageRequest(ServerRequest r) {
