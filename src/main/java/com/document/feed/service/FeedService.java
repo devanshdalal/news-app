@@ -66,10 +66,14 @@ public class FeedService {
         .flatMap((Preference s) -> Flux.just(s.getArticle()));
   }
 
-  public Mono<Article> setPreference(String id, String username) {
+  public Mono<Article> setPreference(Article a, String username) {
     System.out.println("FeedService.setPreference called");
-    return this.articleRepository.findById(id).flatMap(
-        a -> preferenceRepository.save(new Preference(a.getId(), a, username))
-            .flatMap(saved -> Mono.just(saved.getArticle())));
+    return preferenceRepository.save(new Preference(a.getId(), a, username))
+            .flatMap(saved -> Mono.just(saved.getArticle()));
+  }
+
+  public Mono<Void> deletePreference(String id) {
+    System.out.println("FeedService.deletePreference called");
+    return preferenceRepository.deleteById(id);
   }
 }

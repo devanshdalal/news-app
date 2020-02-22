@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.List;
 import org.reactivestreams.Publisher;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 @Component
 @Configuration
@@ -50,7 +52,8 @@ public class FeedHandler {
         .andRoute(GET("/vanillalist").and(accept(APPLICATION_JSON)), this::vanillaList)
         .andRoute(GET("/list").and(accept(APPLICATION_JSON)), this::list)
         .andRoute(GET("/liked").and(accept(APPLICATION_JSON)), this::getPreference)
-        .andRoute(POST("/like").and(accept(APPLICATION_JSON)), this::setPreference);
+        .andRoute(POST("/like").and(accept(APPLICATION_JSON)), this::setPreference)
+        .andRoute(POST("/dislike").and(accept(APPLICATION_JSON)), this::deletePreference);
   }
 
   Mono<ServerResponse> HandleOptionsCall(ServerRequest r) {
@@ -67,6 +70,18 @@ public class FeedHandler {
     return defaultReadResponse(this.feedService.list(pageRequest));
   }
 
+  public Mono<ServerResponse> deletePreference(ServerRequest request) {
+    System.out.println("Start deletePreference()");
+    // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    // String username = (String) authentication.getPrincipal();
+    Mono<String> item = request.bodyToMono(String.class);
+    return item.flatMap(objectId -> {
+      System.out.println("objectId: " + objectId);
+      return this.feedService.deletePreference(objectId).then(
+          ServerResponse.ok().contentType(APPLICATION_JSON).bodyValue(objectId));
+    });
+  }
+
   Mono<ServerResponse> getPreference(ServerRequest r) {
     r.session().subscribe(
         webSession -> System.out.println("webSession:" + webSession.getCreationTime()));
@@ -77,15 +92,26 @@ public class FeedHandler {
     System.out.println("Start setPreference()");
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = (String) authentication.getPrincipal();
-    Mono<String> id = request.bodyToMono(String.class);
-    return id.flatMap(objectId -> this.feedService.setPreference(objectId, username)
+    Mono<Article> item = request.bodyToMono(Article.class);
+    return item.flatMap(i -> { i.setV(RunCmd(i)); return Mono.just(i); })
+        .flatMap(objectId -> this.feedService.setPreference(objectId, username)
         .flatMap(x -> ServerResponse.ok().contentType(APPLICATION_JSON).bodyValue(x))
-        .switchIfEmpty(ServerResponse.notFound().build())).doFinally(i -> RunCmd());
+        .switchIfEmpty(ServerResponse.notFound().build()));
   }
 
-  private void RunCmd() {
+  private double[] RunCmd(Article item) {
+    String lastLine = "";
     try {
-      Process process = Runtime.getRuntime().exec("python nlp/main.py True");
+      String cmd = "python nlp/preference_saver.py";
+//      cmd += " " + item.getCountry();
+//      cmd += " " + item.getCategory();
+      cmd += " \"" + item.getAuthor() + "\"";
+      cmd += " \"" + item.getTitle();
+      cmd += " " + item.getDescription();
+      cmd += " " + item.getContent() + "\"";
+      cmd = cmd.replace('\n', ' ');
+      System.out.println("cmd: " + cmd);
+      Process process = Runtime.getRuntime().exec(cmd);
       StringBuilder output = new StringBuilder();
 
       BufferedReader reader = new BufferedReader(
@@ -93,20 +119,27 @@ public class FeedHandler {
 
       String line;
       while ((line = reader.readLine()) != null) {
-        output.append(line + "\n");
+         output.append(line + "\n");  //just get the last line
+        lastLine = line;
       }
 
       int exitVal = process.waitFor();
+      System.out.println(output);
       if (exitVal == 0) {
         System.out.println("Success!");
-        System.out.println(output);
-        System.exit(0);
       } else {
         System.out.println("Failure!");
       }
     } catch (IOException | InterruptedException e) {
       e.printStackTrace();
     }
+    String[] weightArray = lastLine.split(" ");
+    double[] ret = new double[weightArray.length];
+    int index = 0;
+    for (String wt: weightArray) {
+      ret[index++] = Double.parseDouble(wt);
+    }
+    return ret;
   }
 
   private PageRequest createPageRequest(ServerRequest r) {

@@ -64,8 +64,36 @@ public class Article {
   // Extra fields computed during ordering.
   private double dot;
 
+  public String getTitle() {
+    return title;
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public String getCategory() {
+    return category;
+  }
+
+  public String getAuthor() {
+    return author;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
   public double[] getV() {
     return v;
+  }
+
+  public void setV(double[] v) {
+    this.v = v;
   }
 
   public String getId() {

@@ -13,7 +13,7 @@ import nltk
 max_features = 100  # max features to be used in TfidfVectorizer
 stemming = True
 lemmatization = False
-lowercase = False
+lowercase = True
 remove_stops = True
 stops = ['the','a','an','and','but','if','or','because','as','what','which','this','that','these','those','then',
         'just','so','than','such','both','through','about','for','is','of','while','during','to','What','Which',
@@ -31,9 +31,9 @@ if stemming:
 
 def ExtractText(data):
     def Prune(item, s):
-        if s not in item or not item[s]:
+        if s not in item or not item[s] or item[s] == None:
             return ''
-        return s
+        return item[s]
     def StripFromEnd(item, s):
         return re.sub(r'\[.+\]$', '', Prune(item, s))
     def Special(pre, item):
@@ -45,9 +45,7 @@ def ExtractText(data):
                          Prune(item, 'description'),
                          StripFromEnd(item, 'content')])
     def PostExtraction(item, txt):
-        return ' '.join([txt, Special('author', item),
-                        Special('country', item),
-                        Special('category', item)])
+        return ' '.join([txt, Special('author', item)])
     def ApplyOpts(txt):
         # Replace apostrophes with standard lexicons
         txt = txt.replace("isn't", "is not")
@@ -157,12 +155,13 @@ def ExtractText(data):
     result = [''] * len(data)
     for i, item in enumerate(data):
         result[i] = ApplyOpts(ExtractItem(item))
+        # print('result[i]', ExtractItem(item))
         result[i] = PostExtraction(item, result[i])
     return result
 
 def TfIdfScores(news, liked = []):
     extracted_news = ExtractText(news)
-    print('extracted_news[1]', extracted_news[1])
+    # print('extracted_news[1]', extracted_news[1])
     fit_transform = tf.fit_transform(extracted_news)
     print('tf.get_feature_names()', tf.get_feature_names())
     for i,_ in enumerate(news):
@@ -172,6 +171,7 @@ def TfIdfScores(news, liked = []):
         extracted_liked = list(map(lambda x: x['article'], liked))
         extracted_liked = ExtractText(extracted_liked)
 
+        print('extracted_liked', extracted_liked)
         transform = tf.transform(extracted_liked)
         for i,_ in enumerate(liked):
             liked[i]['article']['v'] = transform[i].todense().tolist()[0]
