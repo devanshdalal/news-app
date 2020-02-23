@@ -17,6 +17,7 @@ if not MONGODB_URL:
     MONGODB_URL = 'mongodb://localhost:27017'
 
 def GetMongoClient():
+	print('using MONGODB_URL:', MONGODB_URL)
 	return MongoClient(MONGODB_URL)
 
 def ToUpdateTable(table):
