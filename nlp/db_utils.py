@@ -10,7 +10,7 @@ DB = 'feed'
 MINUTES_IN_HOUR = 60
 
 # Config
-update_interval = 360  # minutes
+update_interval = MINUTES_IN_HOUR # minutes
 
 MONGODB_URL = os.environ.get('MONGODB_URL')
 if not MONGODB_URL:
