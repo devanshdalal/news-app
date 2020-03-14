@@ -11,7 +11,7 @@ import nltk
 
 # Config
 max_features = 100  # max features to be used in TfidfVectorizer
-stemming = True
+stemming = False
 lemmatization = False
 lowercase = True
 remove_stops = True
