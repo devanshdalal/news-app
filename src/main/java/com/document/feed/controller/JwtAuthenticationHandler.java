@@ -48,7 +48,7 @@ public class JwtAuthenticationHandler {
     public Mono<ServerResponse> signIn(ServerRequest request) {
         System.out.println("Start signIn() ");
         Mono<JwtRequest> jwtRequestMono = request.bodyToMono(JwtRequest.class);
-        jwtRequestMono.subscribe(v -> System.out.println(v.toString()));
+        // jwtRequestMono.subscribe(v -> System.out.println(v.toString()));
         return jwtRequestMono.flatMap(jwtRequest -> userRepository.findByUsername(jwtRequest.getUsername())
                 .flatMap(user -> ServerResponse.ok().contentType(APPLICATION_JSON)
                         .body(BodyInserters.fromValue(new JwtResponse(generateToken(user)))))
@@ -57,20 +57,20 @@ public class JwtAuthenticationHandler {
 
     private Mono<ServerResponse> signUp(final ServerRequest request) {
         System.out.println("Start signUp() ");
-        Mono<User> userMono = request.bodyToMono(User.class);
+        final Mono<User> userMono = request.bodyToMono(User.class);
         return userMono.flatMap(user -> userRepository.findByUsername(user.getUsername())
                 .flatMap(dbUser -> ServerResponse.badRequest().body(BodyInserters.fromValue("User already exist")))
                 .switchIfEmpty(userRepository.save(user).flatMap(savedUser -> ServerResponse.ok()
                         .contentType(APPLICATION_JSON).body(BodyInserters.fromValue(savedUser)))));
     }
 
-    public String generateToken(User user) {
+    public String generateToken(final User user) {
         System.out.println("Start generateToken(): " + user.getUsername() + "," + user.getPassword());
 
-        Claims claims = Jwts.claims().setSubject(user.getUsername());
+        final Claims claims = Jwts.claims().setSubject(user.getUsername());
         claims.put("scopes", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
 
-        JwtBuilder builder = Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
+        final JwtBuilder builder = Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
                 .signWith(SignatureAlgorithm.HS256, jwtTokenUtil.getSecret())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY_SECONDS * 1000));
         return builder.compact();
