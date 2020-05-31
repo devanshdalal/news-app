@@ -15,38 +15,50 @@ stemming = False
 lemmatization = False
 lowercase = True
 remove_stops = True
-stops = ['the','a','an','and','but','if','or','because','as','what','which','this','that','these','those','then',
-        'just','so','than','such','both','through','about','for','is','of','while','during','to','What','Which',
-        'Is','If','While','This']
+stops = set.union(
+    set(map(lambda x: x.strip(),
+            open('nlp/stops.txt').readlines())),
+    set(map(lambda x: x.strip(),
+            open('nlp/10000.txt').readlines())))
 # punctuation = punctuation.replace('_','')
 
 lemmatizer = None
 if lemmatization:
     nltk.download('wordnet')
     lemmatizer = WordNetLemmatizer()
-tf = TfidfVectorizer(max_features=max_features, stop_words='english')
+tf = TfidfVectorizer(max_features=max_features, stop_words=stops)
 st = None
 if stemming:
     st = PorterStemmer()
+
 
 def ExtractText(data):
     def Prune(item, s):
         if s not in item or not item[s] or item[s] == None:
             return ''
         return item[s]
+
     def StripFromEnd(item, s):
         return re.sub(r'\[.+\]$', '', Prune(item, s))
+
     def Special(pre, item):
         if pre not in item or item[pre] == None or item[pre] == '':
             return ''
         return pre + '_' + item[pre].replace(' ', '-')
+
     def ExtractItem(item):
-        return ' '.join([Prune(item, 'title'),
-                         Prune(item, 'description'),
-                         StripFromEnd(item, 'content')])
+        return ' '.join([
+            Prune(item, 'title'),
+            Prune(item, 'description'),
+            StripFromEnd(item, 'content')
+        ])
+
     def PostExtraction(item, txt):
         return ' '.join([txt, Special('author', item)])
+
     def ApplyOpts(txt):
+        if lowercase:
+            txt = ' '.join([w.lower() for w in txt.split()])
         # Replace apostrophes with standard lexicons
         txt = txt.replace("isn't", "is not")
         txt = txt.replace("aren't", "are not")
@@ -68,15 +80,6 @@ def ExtractText(data):
         txt = txt.replace("'ll", " will")
 
         # More cleaning
-        # txt = re.sub(r"review", "", txt))
-        # txt = re.sub(r"Review", "", txt)
-        # txt = re.sub(r"TripAdvisor", "", txt))
-        # txt = re.sub(r"reviews", "", txt)
-        # txt = re.sub(r"Hotel", "", txt)
-        # txt = re.sub(r"what's", "", txt)
-        # txt = re.sub(r"What's", "", txt)
-        # txt = re.sub(r"\'s", " ", txt)
-        # txt = txt.replace("pic", "picture")
         txt = re.sub(r"can't", "cannot ", txt)
         txt = re.sub(r"\'ve", " have ", txt)
         txt = re.sub(r"n't", " not ", txt)
@@ -101,19 +104,19 @@ def ExtractText(data):
         txt = re.sub(r"india", "India", txt)
         txt = re.sub(r"switzerland", "Switzerland", txt)
         txt = re.sub(r"china", "China", txt)
-        txt = re.sub(r"chinese", "Chinese", txt) 
+        txt = re.sub(r"chinese", "Chinese", txt)
         txt = re.sub(r"imrovement", "improvement", txt)
         txt = re.sub(r"intially", "initially", txt)
         txt = re.sub(r"quora", "Quora", txt)
-        txt = re.sub(r" dms ", "direct messages ", txt)  
-        txt = re.sub(r"demonitization", "demonetization", txt) 
+        txt = re.sub(r" dms ", "direct messages ", txt)
+        txt = re.sub(r"demonitization", "demonetization", txt)
         # txt = re.sub(r"actived", "active", txt)
         txt = re.sub(r"kms", " kilometers ", txt)
         txt = re.sub(r"KMs", " kilometers ", txt)
-        txt = re.sub(r" cs ", " computer science ", txt) 
+        txt = re.sub(r" cs ", " computer science ", txt)
         txt = re.sub(r" upvotes ", " up votes ", txt)
         txt = re.sub(r" iPhone ", " phone ", txt)
-        txt = re.sub(r"\0rs ", " rs ", txt) 
+        txt = re.sub(r"\0rs ", " rs ", txt)
         txt = re.sub(r"calender", "calendar", txt)
         txt = re.sub(r"ios", "operating system", txt)
         txt = re.sub(r"gps", "GPS", txt)
@@ -121,11 +124,11 @@ def ExtractText(data):
         txt = re.sub(r"programing", "programming", txt)
         txt = re.sub(r"bestfriend", "best friend", txt)
         txt = re.sub(r"dna", "DNA", txt)
-        txt = re.sub(r"III", "3", txt) 
+        txt = re.sub(r"III", "3", txt)
         txt = re.sub(r"the US", "America", txt)
         txt = re.sub(r"Astrology", "astrology", txt)
         txt = re.sub(r"Method", "method", txt)
-        txt = re.sub(r"Find", "find", txt) 
+        txt = re.sub(r"Find", "find", txt)
         txt = re.sub(r"banglore", "Banglore", txt)
         txt = re.sub(r"congress", "Congress", txt)
         txt = re.sub(r"bjp", "BJP", txt)
@@ -136,20 +139,22 @@ def ExtractText(data):
         txt = re.sub(r'[\w\.-]+@[\w\.-]+', ' ', txt, flags=re.MULTILINE)
 
         # Remove punctuation from text
-        txt = ''.join([c for c in txt if c not in punctuation])
+        txt = ''.join([c if c not in punctuation else ' ' for c in txt])
 
         # Remove all symbols
         # txt = re.sub(r'[^A-Za-z0-9\s]',r' ',txt)
-        txt = re.sub(r'\n',r' ',txt)
+        txt = re.sub(r'\n', r' ', txt)
+
+        # Remove all number only words
+        txt = re.sub(r'\b(\d+)\b', r'', txt)
 
         if remove_stops:
             txt = ' '.join([w for w in txt.split() if w not in stops])
-        if lowercase:
-            txt = ' '.join([w.lower() for w in txt.split()])
         if stemming:
             txt = ' '.join([st.stem(w) for w in txt.split()])
         if lemmatization:
-            txt = ' '.join([lemmatizer.lemmatize(w, pos='v') for w in txt.split()])
+            txt = ' '.join(
+                [lemmatizer.lemmatize(w, pos='v') for w in txt.split()])
         return txt
 
     result = [''] * len(data)
@@ -159,12 +164,13 @@ def ExtractText(data):
         result[i] = PostExtraction(item, result[i])
     return result
 
-def TfIdfScores(news, liked = []):
+
+def TfIdfScores(news, liked=[]):
     extracted_news = ExtractText(news)
     # print('extracted_news[1]', extracted_news[1])
     fit_transform = tf.fit_transform(extracted_news)
     print('tf.get_feature_names()', tf.get_feature_names())
-    for i,_ in enumerate(news):
+    for i, _ in enumerate(news):
         news[i]['v'] = fit_transform[i].todense().tolist()[0]
 
     if len(liked) > 0:
@@ -173,9 +179,7 @@ def TfIdfScores(news, liked = []):
 
         print('extracted_liked', extracted_liked)
         transform = tf.transform(extracted_liked)
-        for i,_ in enumerate(liked):
+        for i, _ in enumerate(liked):
             liked[i]['article']['v'] = transform[i].todense().tolist()[0]
 
     return news, liked
-
-

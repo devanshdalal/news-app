@@ -48,7 +48,6 @@ public class JwtAuthenticationHandler {
     public Mono<ServerResponse> signIn(ServerRequest request) {
         System.out.println("Start signIn() ");
         Mono<JwtRequest> jwtRequestMono = request.bodyToMono(JwtRequest.class);
-        // jwtRequestMono.subscribe(v -> System.out.println(v.toString()));
         return jwtRequestMono.flatMap(jwtRequest -> userRepository.findByUsername(jwtRequest.getUsername())
                 .flatMap(user -> ServerResponse.ok().contentType(APPLICATION_JSON)
                         .body(BodyInserters.fromValue(new JwtResponse(generateToken(user)))))
