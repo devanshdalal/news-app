@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperationCon
 
 public class GenericAggregationOperation implements AggregationOperation {
 
-  private String operator;
+  private final String operator;
 
-  private DBObject query;
+  private final DBObject query;
 
   public GenericAggregationOperation(String operator, String query) {
     this(operator, BasicDBObject.parse(query));

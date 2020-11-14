@@ -5,6 +5,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ArticleReactiveRepository
-    extends ReactiveMongoRepository<Article, String>, ArticleRepositoryCustom {
-
-}
+    extends ReactiveMongoRepository<Article, String>, ArticleRepositoryCustom {}

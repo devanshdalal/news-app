@@ -3,27 +3,37 @@
 import sys
 import os
 import pickle
-from nlp_utils import TfIdfScores
+from nlp_utils import TfIdfScores, AddTfIdfWeights
+from db_utils import GetMongoClient, DB
+from bson.objectid import ObjectId
 
-# country, category, "author", ...title, ...description, ...content
-def ParseArgs(args):
-	print('args', args)
-	assert(len(args) >= 2)
-	article = {}
-	# article['country'] = args[1]
-	# article['category'] = args[2]
-	article['author'] = args[1]
-	article['content'] = ' '.join(args[2:])
-	print('article', article)
-	return article
+mongo_url = sys.argv[1]
+preferenceId = ObjectId(sys.argv[2])
 
-article = ParseArgs(sys.argv)
+pickle_in = open("tf.pickle","rb")
+vectorizer = pickle.load(pickle_in)
 
-pickle_in = open("news.pickle","rb")
-news = pickle.load(pickle_in)
-
-news, liked_articles = TfIdfScores(news, [{'article': article}])
+# 
+mongo_client = GetMongoClient(mongo_url)
+db = mongo_client[DB]
+preference = db.preference
 
 # print(len(news))
 
-print(' '.join(map(lambda x: str(x), liked_articles[-1]['article']['v'])))
+liked = preference.find({"_id" : preferenceId})
+
+print('liked', liked)
+
+likedv = AddTfIdfWeights(list(liked), vectorizer)
+
+print('likedv', likedv)
+
+preference.update_one({
+  '_id': preferenceId
+},{
+  '$set': {
+    'd.a': likedv[0]['article']['v']
+  }
+})
+
+

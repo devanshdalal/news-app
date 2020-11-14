@@ -35,8 +35,7 @@ class Source {
 @JsonInclude(Include.NON_NULL)
 public class Article {
 
-  @Id
-  private String id;
+  @Id private String id;
 
   private Source source;
 

@@ -12,5 +12,4 @@ public interface GenericAggregationUtils {
   static AggregationOperation aggregate(String operation, DBObject query) {
     return new GenericAggregationOperation(operation, query);
   }
-
 }

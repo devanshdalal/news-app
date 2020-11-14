@@ -29,7 +29,7 @@ categories = {
 #Keys
 NEWSAPI_ORG_KEY = os.environ.get('NEWSAPI_ORG_KEY')
 if not NEWSAPI_ORG_KEY:  # TODO(devansh): Remove
-    NEWSAPI_ORG_KEY = 'ea0f26bbe06b44b898f0f0a80af00c7d'
+    NEWSAPI_ORG_KEY = '7bca7fe0b1cf411082fc45d8d78b4dd4'
 
 # Enable requests cache
 def InstallRequestsCache():
@@ -49,13 +49,14 @@ def FetchNews(newsapi):
         cindex = 0
         while keep_downloading:
             print('newsapi.get_top_headlines(category=', category,
-                  ', page=1', 'country='+countries[cindex] if countries != [] else '', 
+                  ', page=1', ', country='+countries[cindex] if countries != [] else '', 
                   ', page_size=', PAGE_SIZE, ')')
             r = None
             if countries == []:
                 r = newsapi.get_top_headlines(category=category,
                                               page=1,
-                                              page_size=PAGE_SIZE)
+                                              page_size=PAGE_SIZE,
+                                              language='en')
                 if (r['status'] == 'ok'):
                     news[category] = r['articles']
                 keep_downloading = False
@@ -63,7 +64,8 @@ def FetchNews(newsapi):
                 r = newsapi.get_top_headlines(country=countries[cindex],
                                               category=category,
                                               page=1,
-                                              page_size=PAGE_SIZE)
+                                              page_size=PAGE_SIZE,
+                                              language='en')
                 for c in r['articles']:
                     c['country'] = countries[cindex]
                 # print(r['articles'])

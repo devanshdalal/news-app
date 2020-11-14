@@ -1,16 +1,19 @@
 package com.document.feed;
 
 import com.document.feed.model.ArticleReactiveRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
+@RequiredArgsConstructor
+@EnableRetry
 public class FeedApplication implements CommandLineRunner {
 
-  @Autowired
-  private ArticleReactiveRepository repository;
+  private final ArticleReactiveRepository repository;
 
   public static void main(String[] args) {
     SpringApplication.run(FeedApplication.class, args);

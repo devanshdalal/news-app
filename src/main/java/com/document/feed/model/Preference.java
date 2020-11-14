@@ -10,7 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-//@AllArgsConstructor
+// @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @Document
@@ -19,8 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Preference {
 
-  @Id
-  private String id;
+  @Id private String id;
 
   private Article article;
 

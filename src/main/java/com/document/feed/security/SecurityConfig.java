@@ -14,21 +14,41 @@ import reactor.core.publisher.Mono;
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
+  @Autowired private AuthenticationManager authenticationManager;
 
-  @Autowired
-  private SecurityContextRepository securityContextRepository;
+  @Autowired private SecurityContextRepository securityContextRepository;
 
   @Bean
   SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
-    String[] patterns = new String[] { "/auth/**", "/vanillalist", "/newsapi/**" };
-    return http.cors().and().exceptionHandling().authenticationEntryPoint((swe, e) -> Mono.fromRunnable(() -> {
-      swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-    })).accessDeniedHandler((swe, e) -> Mono.fromRunnable(() -> {
-      swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-    })).and().csrf().disable().authenticationManager(authenticationManager)
-        .securityContextRepository(securityContextRepository).authorizeExchange().pathMatchers(HttpMethod.OPTIONS)
-        .permitAll().pathMatchers(patterns).permitAll().anyExchange().authenticated().and().build();
+    String[] patterns = new String[] {"/auth/**", "/vanillalist", "/newsapi/**"};
+    return http.cors()
+        .and()
+        .exceptionHandling()
+        .authenticationEntryPoint(
+            (swe, e) ->
+                Mono.fromRunnable(
+                    () -> {
+                      swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    }))
+        .accessDeniedHandler(
+            (swe, e) ->
+                Mono.fromRunnable(
+                    () -> {
+                      swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                    }))
+        .and()
+        .csrf()
+        .disable()
+        .authenticationManager(authenticationManager)
+        .securityContextRepository(securityContextRepository)
+        .authorizeExchange()
+        .pathMatchers(HttpMethod.OPTIONS)
+        .permitAll()
+        .pathMatchers(patterns)
+        .permitAll()
+        .anyExchange()
+        .authenticated()
+        .and()
+        .build();
   }
 }

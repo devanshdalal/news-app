@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 import nltk
+import urllib.parse
 
 # Config
 max_features = 100  # max features to be used in TfidfVectorizer
@@ -41,10 +42,17 @@ def ExtractText(data):
     def StripFromEnd(item, s):
         return re.sub(r'\[.+\]$', '', Prune(item, s))
 
-    def Special(pre, item):
-        if pre not in item or item[pre] == None or item[pre] == '':
+    def AddAuthorInfo(item):
+        id = 'author'
+        if id not in item or item[id] == None or item[id] == '':
             return ''
-        return pre + '_' + item[pre].replace(' ', '-')
+        extracted_author = None 
+        if 'http' in item[id]:
+            extracted_author = urllib.parse.urlparse(item[id]).netloc
+            extracted_author = extracted_author.replace('.', '')
+        else:
+            extracted_author = item[id].replace(' ', '-')
+        return id + '_' + extracted_author
 
     def ExtractItem(item):
         return ' '.join([
@@ -54,7 +62,7 @@ def ExtractText(data):
         ])
 
     def PostExtraction(item, txt):
-        return ' '.join([txt, Special('author', item)])
+        return ' '.join([txt, AddAuthorInfo(item)])
 
     def ApplyOpts(txt):
         if lowercase:
@@ -165,21 +173,25 @@ def ExtractText(data):
     return result
 
 
-def TfIdfScores(news, liked=[]):
+def TfIdfScores(news, tfidfVectorizer):
     extracted_news = ExtractText(news)
-    # print('extracted_news[1]', extracted_news[1])
-    fit_transform = tf.fit_transform(extracted_news)
-    print('tf.get_feature_names()', tf.get_feature_names())
+    print('extracted_news[1]', extracted_news[1])
+    fit_transform = tfidfVectorizer.fit_transform(extracted_news)
+    print("tfidfVectorizer.vocabulary_", tfidfVectorizer.vocabulary_)
+    weights = list(map(lambda x: {x[0]: x[1]}, zip(tfidfVectorizer.get_feature_names(), tfidfVectorizer.idf_)))
+    print('weights', weights)
     for i, _ in enumerate(news):
         news[i]['v'] = fit_transform[i].todense().tolist()[0]
 
-    if len(liked) > 0:
-        extracted_liked = list(map(lambda x: x['article'], liked))
-        extracted_liked = ExtractText(extracted_liked)
 
-        print('extracted_liked', extracted_liked)
-        transform = tf.transform(extracted_liked)
-        for i, _ in enumerate(liked):
-            liked[i]['article']['v'] = transform[i].todense().tolist()[0]
+    return news, tfidfVectorizer
 
-    return news, liked
+def AddTfIdfWeights(liked, tfidfVectorizer):
+    extracted_liked = list(map(lambda x: x['article'], liked))
+    extracted_liked = ExtractText(extracted_liked)
+
+    print('extracted_liked', extracted_liked)
+    transform = tfidfVectorizer.transform(extracted_liked)
+    for i, _ in enumerate(liked):
+        liked[i]['article']['v'] = transform[i].todense().tolist()[0]
+    return liked

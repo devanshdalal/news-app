@@ -31,47 +31,69 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class JwtAuthenticationHandler {
 
-    private static final long ACCESS_TOKEN_VALIDITY_SECONDS = 100000;
+  private static final long ACCESS_TOKEN_VALIDITY_SECONDS = 100000;
 
-    @Autowired
-    private UserReactiveRepository userRepository;
+  @Autowired private UserReactiveRepository userRepository;
 
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+  @Autowired private JwtTokenUtil jwtTokenUtil;
 
-    @Bean
-    public RouterFunction authRoute() {
-        return RouterFunctions.route(POST("/auth/signin").and(accept(APPLICATION_JSON)), this::signIn)
-                .andRoute(POST("/auth/signup").and(accept(APPLICATION_JSON)), this::signUp);
-    }
+  @Bean
+  public RouterFunction authRoute() {
+    return RouterFunctions.route(POST("/auth/signin").and(accept(APPLICATION_JSON)), this::signIn)
+        .andRoute(POST("/auth/signup").and(accept(APPLICATION_JSON)), this::signUp);
+  }
 
-    public Mono<ServerResponse> signIn(ServerRequest request) {
-        System.out.println("Start signIn() ");
-        Mono<JwtRequest> jwtRequestMono = request.bodyToMono(JwtRequest.class);
-        return jwtRequestMono.flatMap(jwtRequest -> userRepository.findByUsername(jwtRequest.getUsername())
-                .flatMap(user -> ServerResponse.ok().contentType(APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(new JwtResponse(generateToken(user)))))
-                .switchIfEmpty(ServerResponse.badRequest().body(BodyInserters.fromValue("User does not exist"))));
-    }
+  public Mono<ServerResponse> signIn(ServerRequest request) {
+    System.out.println("Start signIn() ");
+    Mono<JwtRequest> jwtRequestMono = request.bodyToMono(JwtRequest.class);
+    return jwtRequestMono.flatMap(
+        jwtRequest ->
+            userRepository
+                .findByUsername(jwtRequest.getUsername())
+                .flatMap(
+                    user ->
+                        ServerResponse.ok()
+                            .contentType(APPLICATION_JSON)
+                            .body(BodyInserters.fromValue(new JwtResponse(generateToken(user)))))
+                .switchIfEmpty(
+                    ServerResponse.badRequest()
+                        .body(BodyInserters.fromValue("User does not exist"))));
+  }
 
-    private Mono<ServerResponse> signUp(final ServerRequest request) {
-        System.out.println("Start signUp() ");
-        final Mono<User> userMono = request.bodyToMono(User.class);
-        return userMono.flatMap(user -> userRepository.findByUsername(user.getUsername())
-                .flatMap(dbUser -> ServerResponse.badRequest().body(BodyInserters.fromValue("User already exist")))
-                .switchIfEmpty(userRepository.save(user).flatMap(savedUser -> ServerResponse.ok()
-                        .contentType(APPLICATION_JSON).body(BodyInserters.fromValue(savedUser)))));
-    }
+  private Mono<ServerResponse> signUp(final ServerRequest request) {
+    System.out.println("Start signUp() ");
+    final Mono<User> userMono = request.bodyToMono(User.class);
+    return userMono.flatMap(
+        user ->
+            userRepository
+                .findByUsername(user.getUsername())
+                .flatMap(
+                    dbUser ->
+                        ServerResponse.badRequest()
+                            .body(BodyInserters.fromValue("User already exist")))
+                .switchIfEmpty(
+                    userRepository
+                        .save(user)
+                        .flatMap(
+                            savedUser ->
+                                ServerResponse.ok()
+                                    .contentType(APPLICATION_JSON)
+                                    .body(BodyInserters.fromValue(savedUser)))));
+  }
 
-    public String generateToken(final User user) {
-        System.out.println("Start generateToken(): " + user.getUsername() + "," + user.getPassword());
+  public String generateToken(final User user) {
+    System.out.println("Start generateToken(): " + user.getUsername() + "," + user.getPassword());
 
-        final Claims claims = Jwts.claims().setSubject(user.getUsername());
-        claims.put("scopes", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
+    final Claims claims = Jwts.claims().setSubject(user.getUsername());
+    claims.put("scopes", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
 
-        final JwtBuilder builder = Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
-                .signWith(SignatureAlgorithm.HS256, jwtTokenUtil.getSecret())
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY_SECONDS * 1000));
-        return builder.compact();
-    }
+    final JwtBuilder builder =
+        Jwts.builder()
+            .setClaims(claims)
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .signWith(SignatureAlgorithm.HS256, jwtTokenUtil.getSecret())
+            .setExpiration(
+                new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY_SECONDS * 1000));
+    return builder.compact();
+  }
 }

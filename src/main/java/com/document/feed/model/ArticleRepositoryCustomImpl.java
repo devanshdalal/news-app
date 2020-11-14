@@ -24,33 +24,32 @@ import reactor.core.publisher.Flux;
 
 public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
 
-  public static final List<String> fieldsToProject = new ArrayList<String>() {
-    {
-      add("id");
-      add("author");
-      add("title");
-      add("description");
-      add("content");
-      add("url");
-      add("publishedAt");
-      add("urlToImage");
-    }
-  };
+  public static final List<String> fieldsToProject =
+      new ArrayList<String>() {
+        {
+          add("id");
+          add("author");
+          add("title");
+          add("description");
+          add("content");
+          add("url");
+          add("publishedAt");
+          add("urlToImage");
+        }
+      };
 
   private final ReactiveMongoTemplate mongoTemplate;
 
-  @Autowired
-  private ResourceLoader resourceLoader;
+  @Autowired private final ResourceLoader resourceLoader;
 
-  private String project;
+  private final String project;
 
-  public ArticleRepositoryCustomImpl(ReactiveMongoTemplate mongoTemplate,
-      ResourceLoader resourceLoader) {
+  public ArticleRepositoryCustomImpl(
+      ReactiveMongoTemplate mongoTemplate, ResourceLoader resourceLoader) {
     this.mongoTemplate = mongoTemplate;
     this.resourceLoader = resourceLoader;
 
-    Resource resource = resourceLoader
-        .getResource("classpath:com/document/feed/model/project.txt");
+    Resource resource = resourceLoader.getResource("classpath:com/document/feed/model/project.txt");
     this.project = asString(resource);
   }
 
@@ -63,15 +62,17 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
   }
 
   public Flux<Article> findByDotProduct(BasicVector basicVector, PageRequest pageRequest) {
-    List<String> fields = fieldsToProject.stream().map(x -> x + ": 1")
-        .collect(Collectors.toList());
-    String finalProject = String.format(project, String.join(",\n", fields),
-        Arrays.toString(basicVector.toArray()));
+    List<String> fields = fieldsToProject.stream().map(x -> x + ": 1").collect(Collectors.toList());
+    String finalProject =
+        String.format(project, String.join(",\n", fields), Arrays.toString(basicVector.toArray()));
     System.out.println("finalProject: " + finalProject);
-    Aggregation aggregation = newAggregation(Article.class, aggregate("$project", finalProject),
-        Aggregation.sort(Sort.Direction.DESC, "dot"),
-        Aggregation.skip(pageRequest.getOffset()),
-        Aggregation.limit(pageRequest.getPageSize()));
+    Aggregation aggregation =
+        newAggregation(
+            Article.class,
+            aggregate("$project", finalProject),
+            Aggregation.sort(Sort.Direction.DESC, "dot"),
+            Aggregation.skip(pageRequest.getOffset()),
+            Aggregation.limit(pageRequest.getPageSize()));
 
     return mongoTemplate.aggregate(aggregation, "article", Article.class);
   }
@@ -79,10 +80,12 @@ public class ArticleRepositoryCustomImpl implements ArticleRepositoryCustom {
   public Flux<Article> findByProjection(PageRequest pageRequest) {
     System.out.println(pageRequest.getOffset());
     System.out.println("pageRequest.getPageSize() " + pageRequest.getPageSize());
-    Aggregation aggregation = newAggregation(Article.class,
-        Aggregation.project(fieldsToProject.toArray(new String[0])),
-        Aggregation.skip(pageRequest.getOffset()),
-        Aggregation.limit(pageRequest.getPageSize()));
+    Aggregation aggregation =
+        newAggregation(
+            Article.class,
+            Aggregation.project(fieldsToProject.toArray(new String[0])),
+            Aggregation.skip(pageRequest.getOffset()),
+            Aggregation.limit(pageRequest.getPageSize()));
 
     return mongoTemplate.aggregate(aggregation, "article", Article.class);
   }

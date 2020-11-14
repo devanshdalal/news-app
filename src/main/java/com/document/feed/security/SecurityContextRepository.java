@@ -21,11 +21,9 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
   private static final Logger logger = LoggerFactory.getLogger(SecurityContextRepository.class);
 
-  @Autowired
-  private AuthenticationManager authenticationManager;
+  @Autowired private AuthenticationManager authenticationManager;
 
-  @Autowired
-  private JwtTokenUtil jwtTokenUtil;
+  @Autowired private JwtTokenUtil jwtTokenUtil;
 
   @Override
   public Mono save(ServerWebExchange serverWebExchange, SecurityContext sc) {
@@ -54,14 +52,16 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     System.out.println("SecurityContextRepository.username:" + username);
     if (authToken != null) {
       Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
-      return authenticationManager.authenticate(auth).map((authentication) -> {
-        SecurityContextHolder.getContext()
-            .setAuthentication((Authentication) authentication);
-        return new SecurityContextImpl((Authentication) authentication);
-      });
+      return authenticationManager
+          .authenticate(auth)
+          .map(
+              (authentication) -> {
+                SecurityContextHolder.getContext()
+                    .setAuthentication((Authentication) authentication);
+                return new SecurityContextImpl((Authentication) authentication);
+              });
     } else {
       return Mono.empty();
     }
   }
-
 }

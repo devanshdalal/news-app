@@ -12,8 +12,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
-  @Autowired
-  private JwtTokenUtil jwtTokenUtil;
+  @Autowired private JwtTokenUtil jwtTokenUtil;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -29,8 +28,8 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     System.out.println("AuthenticationManager.username: " + username);
     if (username != null && !jwtTokenUtil.isTokenExpired(authToken)) {
       Claims claims = jwtTokenUtil.getAllClaimsFromToken(authToken);
-      UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-          username, null, null);
+      UsernamePasswordAuthenticationToken auth =
+          new UsernamePasswordAuthenticationToken(username, null, null);
       //            SecurityContextHolder
       //                    .getContext().setAuthentication(auth);
       System.out.println("AuthenticationManager.getContext().setAuthentication:" + auth);
@@ -39,5 +38,4 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
       return Mono.empty();
     }
   }
-
 }

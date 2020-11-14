@@ -14,12 +14,18 @@ public class CorsGlobalConfiguration implements WebFluxConfigurer {
 
   @Override
   public void addCorsMappings(CorsRegistry corsRegistry) {
-    corsRegistry.addMapping("/**").allowedOrigins("*").allowedHeaders("*")
-        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowCredentials(true)
-        .exposedHeaders("Access-Control-Allow-Origin", "Access-Control-Allow-Methods",
-            "Access-Control-Allow-Headers", "Access-Control-Max-Age",
-            "Access-Control-Request-Headers", "Access-Control-Request-Method")
+    corsRegistry
+        .addMapping("/**")
+        .allowedOrigins("*")
+        .allowedHeaders("*")
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .exposedHeaders(
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Methods",
+            "Access-Control-Allow-Headers",
+            "Access-Control-Max-Age",
+            "Access-Control-Request-Headers",
+            "Access-Control-Request-Method")
         .maxAge(100);
   }
 }
-
