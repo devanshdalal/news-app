@@ -1,4 +1,4 @@
-# news-recommendation
+# news-app
 
 This is a spring webflux server which implements TF-IDF based article recommendation engine.
 
